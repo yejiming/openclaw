@@ -482,6 +482,56 @@ describe("tts", () => {
       expect(result.overrides.provider).toBeUndefined();
       expect(result.ttsText).toBeUndefined();
     });
+
+    it("parses standalone directives in CRLF text", () => {
+      const policy = resolveModelOverridePolicy({ enabled: true, allowProvider: true });
+      const input = [
+        "Hello world",
+        "[[tts:provider=edge voice=alloy]]",
+        "",
+        "[[tts:text]]",
+        "Read this with feeling.",
+        "[[/tts:text]]",
+      ].join("\r\n");
+      const result = parseTtsDirectives(input, policy);
+      const openaiOverrides = result.overrides.providerOverrides?.openai as
+        | { voice?: string }
+        | undefined;
+
+      expect(result.hasDirective).toBe(true);
+      expect(result.overrides.provider).toBe("edge");
+      expect(openaiOverrides?.voice).toBe("alloy");
+      expect(result.ttsText).toBe("Read this with feeling.");
+      expect(result.cleanedText).toBe(["Hello world", ""].join("\r\n"));
+    });
+
+    it("uses only the first [[tts:text]] block when multiple blocks are present", () => {
+      const policy = resolveModelOverridePolicy({ enabled: true });
+      const input = [
+        "Intro",
+        "[[tts:text]]",
+        "first block text",
+        "[[/tts:text]]",
+        "",
+        "[[tts:text]]",
+        "second block text",
+        "[[/tts:text]]",
+      ].join("\n");
+      const result = parseTtsDirectives(input, policy);
+
+      expect(result.ttsText).toBe("first block text");
+      expect(result.cleanedText).toBe(["Intro", ""].join("\n"));
+      expect(result.hasDirective).toBe(true);
+    });
+
+    it("preserves surrounding blank lines in cleanedText after directive removal", () => {
+      const policy = resolveModelOverridePolicy({ enabled: true, allowProvider: true });
+      const input = "\n\n[[tts:provider=edge]]\n\nBody paragraph.\n\n";
+      const result = parseTtsDirectives(input, policy);
+
+      expect(result.cleanedText).toBe("\n\n\nBody paragraph.\n\n");
+      expect(result.overrides.provider).toBe("edge");
+    });
   });
 
   describe("summarizeText", () => {
@@ -875,7 +925,7 @@ describe("tts", () => {
       },
       {
         name: "tagged text is synthesized",
-        payload: { text: "[[tts:text]]Hello world[[/tts:text]]" },
+        payload: { text: "[[tts:text]]\nHello world\n[[/tts:text]]" },
         expectedFetchCalls: 1,
         expectSamePayload: false,
       },
