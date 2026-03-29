@@ -482,6 +482,16 @@ describe("tts", () => {
       expect(result.overrides.provider).toBeUndefined();
       expect(result.ttsText).toBeUndefined();
     });
+
+    it("accepts compact tts:text blocks when the directive is standalone", () => {
+      const policy = resolveModelOverridePolicy({ enabled: true, allowProvider: true });
+      const input = "[[tts:text]]Hello world[[/tts:text]]";
+      const result = parseTtsDirectives(input, policy);
+
+      expect(result.hasDirective).toBe(true);
+      expect(result.ttsText).toBe("Hello world");
+      expect(result.cleanedText.trim()).toBe("");
+    });
   });
 
   describe("summarizeText", () => {

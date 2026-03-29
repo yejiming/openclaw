@@ -62,6 +62,19 @@ export function parseTtsDirectives(
     return "";
   });
 
+  // Accept compact tagged payloads like [[tts:text]]Hello[[/tts:text]] when they appear as a
+  // standalone directive line (start/end or newline boundaries), while still ignoring literal
+  // inline examples embedded inside normal prose.
+  const compactBlockRegex =
+    /(?:^|\n)[ \t]*\[\[tts:text\]\]([^\n]*?)\[\[\/tts:text\]\][ \t]*(?=\n|$)/gi;
+  cleanedText = cleanedText.replace(compactBlockRegex, (_match, inner: string) => {
+    hasDirective = true;
+    if (policy.allowText && overrides.ttsText == null) {
+      overrides.ttsText = inner.trim();
+    }
+    return "";
+  });
+
   const directiveRegex = /(?:^|\n)[ \t]*\[\[tts:([^\]]+)\]\][ \t]*(?=\n|$)/gi;
   cleanedText = cleanedText.replace(directiveRegex, (_match, body: string) => {
     hasDirective = true;
