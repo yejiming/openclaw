@@ -47,7 +47,8 @@ function resolveDirectiveProviderConfig(
 }
 
 function parseStandaloneDirectiveBody(trimmedLine: string): string | undefined {
-  const match = /^\[\[tts:([^\]]+)\]\]$/i.exec(trimmedLine);
+function parseStandaloneDirectiveBody(trimmedLine: string): string | undefined {
+  const match = /^\[\[tts:([^\]]+)\]\]$/u.exec(trimmedLine);
   if (!match) {
     return undefined;
   }
