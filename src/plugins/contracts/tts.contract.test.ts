@@ -482,6 +482,15 @@ describe("tts", () => {
       expect(result.overrides.provider).toBeUndefined();
       expect(result.ttsText).toBeUndefined();
     });
+    it("accepts a whole-message inline [[tts:text]] wrapper for tagged auto-TTS flows", () => {
+      const policy = resolveModelOverridePolicy({ enabled: true, allowProvider: true });
+      const input = "[[tts:text]]Hello world[[/tts:text]]";
+      const result = parseTtsDirectives(input, policy);
+
+      expect(result.hasDirective).toBe(true);
+      expect(result.cleanedText).toBe("");
+      expect(result.ttsText).toBe("Hello world");
+    });
   });
 
   describe("summarizeText", () => {
