@@ -61,7 +61,6 @@ export function parseTtsDirectives(
     }
     cleanedText = "";
   }
-
   const blockRegex =
     /(?:^|\n)[ \t]*\[\[tts:text\]\][ \t]*(?:\n|$)([\s\S]*?)(?:\n|^)[ \t]*\[\[\/tts:text\]\][ \t]*(?=\n|$)/gi;
   cleanedText = cleanedText.replace(blockRegex, (_match, inner: string) => {
